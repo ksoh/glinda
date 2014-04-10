@@ -1,0 +1,4 @@
+
+- hosts: pies
+  user: pi
+  sudo: True
