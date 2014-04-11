@@ -5,10 +5,56 @@
 
 - name: update apt if needed
   apt: update_cache=yes
-  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*24
+  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*12
 
 - name: Install packages
   apt: pkg=${item} state=installed
   with_items:
     - ffmpeg
+    ## ref http://www.cyberciti.biz/hardware/5-linux-unix-commands-for-connecting-to-the-serial-console/
     - screen
+    - cu # cu -l /dev/ttyUSB0 -s 115200
+    - expat
+
+- name: Check Node.js installed
+  stat: path=node-{{nodejs_version}}-linux-arm-pi
+  register: check_nodedir
+
+- name: Install Node.js from http://nodejs.org/dist/{{nodejs_version}}/node-{{nodejs_version}}-linux-arm-pi.tar.gz
+  sudo: false
+  raw: wget -q http://nodejs.org/dist/{{nodejs_version}}/node-{{nodejs_version}}-linux-arm-pi.tar.gz
+  when: not check_nodedir.stat.exists
+
+- name: Unpack Node.js package
+  sudo: false
+  raw: tar -xvzf node-{{nodejs_version}}-linux-arm-pi.tar.gz
+  when: not check_nodedir.stat.exists
+
+- name: Set bash profile
+  sudo: false
+  template: src=bash_profile dest=~/.bash_profile
+
+- name: Check oz-node installed
+  sudo: false
+  stat: path=oz-node
+  register: check_oznode
+
+- name: Get oz-node
+  sudo: false
+  raw: git clone https://github.com/swcho/oz-node oz-node
+  when: not check_oznode.stat.exists
+
+- name: Install oz-node
+  sudo: false
+  raw: cd oz-node; /home/pi/node-{{nodejs_version}}-linux-arm-pi/bin/npm install
+  when: not check_oznode.stat.exists
+
+- name: Update oz-node
+  sudo: false
+  raw: cd oz-node; git pull
+  when: check_oznode.stat.exists
+
+- name: Install nodemon
+  raw: /home/pi/node-{{nodejs_version}}-linux-arm-pi/bin/npm install -g nodemon
+
+#- cron: name="check oz-node repo" minute="*" job="ls -alh > /dev/null"

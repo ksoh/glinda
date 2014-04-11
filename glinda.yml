@@ -1,8 +1,9 @@
 
 - hosts: pies
   user: pi
-  sudo: True
-
+  sudo: true
+  vars:
+    nodejs_version: v0.10.24
   tasks:
     - include: tasks/installs.yml
 #    - include: tasks/run_streaming.yml
