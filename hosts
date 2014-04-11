@@ -1,2 +1,2 @@
 [pies]
-pi
+pi ansible_sudo_pass='raspberry'

@@ -1,0 +1,14 @@
+
+- name: check apt last update
+  stat: path=/var/cache/apt
+  register: apt_cache_stat
+
+- name: update apt if needed
+  apt: update_cache=yes
+  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*24
+
+- name: Install packages
+  apt: pkg=${item} state=installed
+  with_items:
+    - ffmpeg
+    - screen

@@ -2,3 +2,7 @@
 - hosts: pies
   user: pi
   sudo: True
+
+  tasks:
+    - include: tasks/installs.yml
+#    - include: tasks/run_streaming.yml
